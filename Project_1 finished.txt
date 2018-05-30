@@ -1,0 +1,87 @@
+-=Project 1=-
+
+-SELECT A REGION-
+For example US-East (N. Virginia)
+
+
+- CREATE A VPC
+From the AWS management console
+Services > VPC > Start VPC Wizard > VPC with Public and Private Subnets > Select
+Step 2: VPC with Public and Private Subnets 
+-> IPv4 CIDR block: "123.0.0.0/16"
+-> VPC name: "my_VPC_Project1"
+
+->Public subnet's IPv4 CIDR: "123.0.1.0/24"
+->Availability Zone: "eu-east-1a"
+->Public subnet name: "Public_subnet_Project1"
+
+->Private subnet's IPv4 CIDR: "123.0.2.0/24"
+->Availability Zone: "eu-east-1a"
+->Private subnet name: "Private_subnet_Project1"
+
+-> "use a NAT instance instead"
+->Instance type: "t2.nano"
+>Create VPC
+
+
+- MODIFY THE ROUTE TABLE TO REALLY MAKE A SUBNET PRIVATE
+From the VPC dashboard
+Route Tables > "Select a subnet associated with your VPC" > Name "Route_private_Project1"
+Verify that in > Routes > Destination 0.0.0.0/0 Target eni-xxx i.e. all the traffic from the private sub is redirected to the NAT instance
+Subnet Associations > Edit > "Select your private sub 'Private_subnet_Project1'> Save
+
+- BY DEFAULT THE PUBLIC SUBNET IS OK
+From the VPC dashboard
+Route Tables > "Select a subnet associated with your VPC" > Name "Route_public_Project1"
+Verify that in > Routes > Destination 0.0.0.0/0 Target igw-xxx i.e. all the traffic from the public sub is using the Internet GateWay for communication
+Subnet Associations > "Public_subnet_Project1" should be added already
+
+
+- CREATE A VPC SECURITY GROUP FOR ACCESS TO INTERNET
+From the VPC dashboard
+Security Groups> Create Security Group
+->Name tag: "WebSecurityGroup_Project1"
+->VPC: "my_VPC_Project1"
+Security Groups > "Select 'WebSecurityGroup_Project1' "
+Inbound Rules > Edit > Type:"HTTP (80)"/ Source: "0.0.0.0/0" (means all wildcards) > Save
+  This inbound rule means that the we can access the instances associated with this security group via Internet
+Inbound Rules > Edit > Type:"RDP (3389)"/ Source: "0.0.0.0/0" (means all wildcards) > Save
+  We can accesst the instances via Remote Desktop Protocol (Windows)
+
+Outbound Rules > Edit > Type:"HTTP (80)"/ Source: "0.0.0.0/0" (means all wildcards) > Save
+  We can access Internet from our instances
+
+- LAUNCH A EC2 IN THE PUBLIC SUBNET
+From the EC2 dashboard
+Instances > Launch instance >
+Step1: Choose AMI
+"Microsoft Windows Server 2016 Base" > Select
+Step3: Configure Instance Details"
+->Network: "my_VPC_Project1"
+->Subnet: "Private_subnet_Project1"
+->Auto-assign Public IP: "Disable"
+Step5: Add Tags
+Add Tag> Key: "Name" / Value: "my_WebServer_Project1"
+Step 6: Configure Security Group
+"Select an existing security group" > "Select 'WebSecurityGroup_Project1' "
+
+
+Select an existing key pair or create a new key pair
+"Create a new key pair"
+->Key pair name: "my_Key_MyProject1"
+->"Download the PEM key file"
+
+- SET UP A BASTION TO CONNECT TO YOUR EC2 IN YOUR PRIVATE SUBNET
+
+
+- CONNECT TO YOUR EC2 INSTANCE
+"Select 'my_WebServer_Project1'"> Connect > Get Password > Choose File > "Browse to your PEM file 'my_Key_MyProject1'"
+> Decrypt Password > "Copy the given password to access to your instance via RDP"
+
+BSSS ??
+
+
+-PING GOOGLE SERVER
+In the EC2 Instance
+>Command Prompt > "ping www.google.com" 
+Verify that the request is processed and not denied
