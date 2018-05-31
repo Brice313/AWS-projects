@@ -23,6 +23,10 @@ Step 2: VPC with Public and Private Subnets
 ->Instance type: "t2.nano"
 >Create VPC
 
+OR 
+Elastics IPS > Allocate new address
+In step 2 in the previous section ->Elastic IP Allocation ID:* "select the EIP you just allocated"
+
 
 - MODIFY THE ROUTE TABLE TO REALLY MAKE A SUBNET PRIVATE
 From the VPC dashboard
@@ -37,7 +41,7 @@ Verify that in > Routes > Destination 0.0.0.0/0 Target igw-xxx i.e. all the traf
 Subnet Associations > "Public_subnet_Project1" should be added already
 
 
-- CREATE A VPC SECURITY GROUP FOR ACCESS TO INTERNET
+- CREATE A VPC SECURITY GROUP FOR PUBLIC SUBNET
 From the VPC dashboard
 Security Groups> Create Security Group
 ->Name tag: "Public_SG_Project1"
@@ -46,7 +50,8 @@ Security Groups > "Select 'WebSecurityGroup_Project1' "
 Inbound Rules > Edit > Type:"HTTP (80)"/ Source: "0.0.0.0/0" (means all wildcards) > Save
   This inbound rule means that the we can access the instances associated with this security group via Internet
 Inbound Rules > Edit > Type:"RDP (3389)"/ Source: "0.0.0.0/0" (means all wildcards) > Save
-  We can accesst the instances via Remote Desktop Protocol (Windows)
+  We can access the instances via Remote Desktop Protocol (Windows)
+
 
 - CREATE A VPC SECURITY GROUP FOR PRIVATE SUBNET
 From the VPC dashboard
@@ -56,6 +61,8 @@ Security Groups> Create Security Group
 Security Groups > "Select 'Private_SG_Project1' "
 Inbound Rules > Edit > Type:"RDP (3389)"/ Source: "0.0.0.0/0" (means all wildcards) > Save
   We can accesst the instances via Remote Desktop Protocol (Windows)
+Inbound Rules > Edit > Type:"All IMCP-IPv4"/ Source: "0.0.0.0/0" (means all wildcards) > Save
+  We can access the instances via ping (for the response)
 
 
 - LAUNCH A EC2 IN THE PRIVATE SUBNET
@@ -78,7 +85,8 @@ Select an existing key pair or create a new key pair
 ->Key pair name: "my_Key_MyProject1"
 ->"Download the PEM key file"
 
-- SET UP A BASTION TO CONNECT TO YOUR EC2 IN YOUR PRIVATE SUBNET
+
+- SET UP A BASTION IN THE PUBLIC SUBNET
 From the EC2 dashboard
 Instances > Launch instance >
 Step1: Choose AMI
@@ -92,6 +100,10 @@ Add Tag> Key: "Name" / Value: "my_Bastion_Project1"
 Step 6: Configure Security Group
 "Select an existing security group" > "Select 'Public_SG_Project1' "
 
+OR
+Elastics IPS > Allocate new address > "Select that address" > Actions > Associate address
+> Instance: "Select the 'my_Bastion_Project1'", Private IP: "Select its Private IP" > Associate
+
 
 - CONNECT TO YOUR BASTION (PUBLIC INSTANCE)
 "Select 'my_Bastion_Project1'"> Connect > Get Password > Choose File > "Browse to your PEM file 'my_Key_MyProject1'"
@@ -99,13 +111,13 @@ Step 6: Configure Security Group
 
 
 - CONNECT TO YOUR SERVER (PRIVATE INSTANCE)
-"Select 'my_WebServer_Project1'"> Connect > Get Password > Choose File > "Browse to your PEM file 'my_Key_MyProject1'"
-> Decrypt Password > "Copy the given password to access to your instance via RDP"
-From the bastion 
-Remote Desktop Connection > IP:"copy the private IP of the web server", Username: "Administrator" > "Copy the password"
+"Select 'my_WebServer_Project1'"> Actions > Get Windows Password > Choose File > "Browse to your PEM file 'my_Key_MyProject1'"
+> Decrypt Password > "Copy the given password to your clipboard"
+From the Bastion instance
+Windows > Remote Desktop Connection > IP:"copy the private IP of 'my_WebServer_Project1'", Username: "Administrator" > "paste the password"
 
 
 -PING GOOGLE SERVER
 In the private EC2 Instance
->Command Prompt > "ping www.google.com" 
+Windows >Command Prompt > "ping www.google.com" 
 Verify that the request is processed and not denied
