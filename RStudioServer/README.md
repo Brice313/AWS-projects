@@ -2,6 +2,7 @@
 
 source: https://aws.amazon.com/blogs/big-data/running-r-on-aws/
 
+
 This tutorial will install the following on a AWS EC2 instance of your choice:
 
 * R
@@ -9,7 +10,8 @@ This tutorial will install the following on a AWS EC2 instance of your choice:
 * Shiny
 * Shiny Server
 
-
+### Launch a EC2 instance
+Dont forget to create a VPC, a IGW, a public subet with a route table associated with the IGW, then you can launch a EC2 inside the public subnet.
 When you launch an EC2 instance, you can pass in user data that can be used to perform common automated configuration tasks. 
 The tasks can even run scripts for installation after the instance starts. 
 In the EC2 launch wizard, you can add this at the Configure Instance Details step by expanding the Advanced Details pane.
@@ -26,9 +28,10 @@ For your R-based analysis environment, you have to open up
 
 
 To see what has happened at launch, you can check the user data output in the following file:
-**/var/log/cloud-init-output.log**
+Connect to your EC2 with PuTTY using your .ppk and enter:
+** cat /var/log/cloud-init-output.log**
 
-##### Using Rstudio server
+### Using Rstudio server
 Using the public IP of your EC2 you can access RStudio server if you specify the right door: ***EC2_IP*:8787**in your browser
 Then login using the credentials specified in the user data.
 If you have massive datasets put them on S3 and import them in R using RCurl package;
@@ -42,7 +45,7 @@ If you have massive datasets put them on S3 and import them in R using RCurl pac
 > head(data)
 ```
 
-##### Configuring the Shiny Server
+### Configuring the Shiny Server
 Once the Server Shiny is set up, a little configuration is needed. Connect to the instance and launch the following command lines:
 
 ```
